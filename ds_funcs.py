@@ -1,3 +1,5 @@
+import joblib, numpy as np, pandas as pd, matplotlib.pyplot as plt, seaborn as sns
+
 
 def train_test_RMSE(deg_lim: int, X: 'array-like', y: 'array-like'):
 
@@ -62,7 +64,7 @@ def plot_graph(X_ax: 'array-like', y_ax:'array-like', fig_loc: str, size: tuple=
         plotter = f"sns.{plot_type[j]}plot(x=X_ax, y=y_ax, ax=axis)"
         eval(plotter)
     
-    fig.savefig(fig_loc, bbox_inches='tight')
+    fig.savefig(fname=fig_loc, bbox_inches='tight')
     
     return fig_loc
     
@@ -73,8 +75,7 @@ def ds_modules_importer():
     matplotlib.pyplot as plt
     :return pd, np, plt, sns, train_test_split, PolynomialFeatures, StandardScaler, SCORERS, mean_absolute_error, mean_squared_error
     '''
-    import pandas as pd, numpy as np
-    import matplotlib.pyplot as plt, seaborn as sns
+    
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import PolynomialFeatures, StandardScaler
     from sklearn.metrics import SCORERS, mean_absolute_error, mean_squared_error
@@ -82,3 +83,33 @@ def ds_modules_importer():
     print('\n\nData Science Modules imported!\n'
           'numpy as np, pandas as pd, matplotlib.pyplot as plt, seaborn as sns\n')
     return pd, np, plt, sns, train_test_split, PolynomialFeatures, StandardScaler, SCORERS, mean_absolute_error, mean_squared_error
+    
+def percentage_missing_data(df: 'DataFrame or Series'):
+    '''
+    returns the percentage of missing data per column
+    input is dataframe or series
+    output is the number of missing rows in percentage
+    return missing_data, missing_data_perc
+    '''
+    
+    missing_data = df.isna().sum()[df.isna().sum() > 0].sort_values(ascending=False)
+    missing_data_perc = np.round(missing_data/df.shape[0] * 100, 2)
+    
+    #  plot graph to display info
+    fig = plt.figure(figsize=(6, 3), dpi=150)
+    ax = fig.add_axes(rect=[0, 0, 1, 1])
+    sns.barplot(x=missing_data_perc.index, y=missing_data_perc, ax=ax)
+    ax.set_xticklabels(labels=missing_data_perc.index, rotation=90)
+    
+    #  save graph as image
+    graph_folder = f'{joblib.os.getcwd()}\\DisplayGraphs'
+    joblib.os.makedirs(graph_folder, exist_ok=True)  # folder created
+    graph_file = f'{graph_folder}\\plot1.png'
+    fig.savefig(fname=graph_file, bbox_inches='tight')
+    
+    # display saved figure image
+    from PIL import Image, ImageShow
+    img = Image.open(graph_file)
+    ImageShow.show(img)
+    
+    return missing_data, missing_data_perc
